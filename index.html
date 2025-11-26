@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fitness Upload</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+  <div class="top-bar">
+    <h1 style="margin:0; font-size:20px;">Fitness Upload</h1>
+    <button class="logout-btn" id="logoutBtn">Logout</button>
+  </div>
+
+  <form id="uploadForm">
+    <button id="yogaTestBtn" class="main-action-btn">Start Yoga Test</button>
+
+    <label for="testType">Select Test:</label>
+    <select id="testType" name="testType" required>
+      <option value="" disabled selected>Choose a test</option>
+      <option value="squats">Squats</option>
+      <option value="pushups">Pushups</option>
+      <option value="jump">Jump</option>
+      <option value="hexagon">Hexagon Test</option>
+    </select>
+    <label for="video">Upload Video:</label>
+    <input type="file" id="video" name="video" accept="video/*" required />
+    <button type="submit">Upload & Evaluate</button>
+  </form>
+
+  <div id="result"></div>
+  <video id="evalVideo" width="100%" controls style="margin-top:20px; display:none;"></video>
+  <a id="downloadLink" href="#" download style="display:none; margin-top:10px;">Download Evaluated Video</a>
+</div>
+
+<script src="/static/script.js"></script>
+
+</body>
+</html>

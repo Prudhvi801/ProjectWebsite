@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoseAI - {{ test|capitalize }} Assessment</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa', 100: '#ccfbf1', 500: '#14b8a6', 
+                            600: '#0d9488', 700: '#0f766e', 900: '#134e4a',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f8fafc; }
+        .chat-scroll::-webkit-scrollbar { width: 6px; }
+        .chat-scroll::-webkit-scrollbar-track { background: transparent; }
+        .chat-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        
+        /* Custom File Input Styling */
+        .file-drop-zone {
+            background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='12' ry='12' stroke='%23CBD5E1FF' stroke-width='2' stroke-dasharray='6%2c 14' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+            transition: all 0.3s ease;
+        }
+        .file-drop-zone:hover {
+            background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='12' ry='12' stroke='%230D9488FF' stroke-width='2' stroke-dasharray='6%2c 14' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+            background-color: #f0fdfa;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-gray-50">
+
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.href='/dashboard'">
+                    <div class="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-white">
+                        <i class="ph ph-figure-yoga text-xl"></i>
+                    </div>
+                    <span class="font-bold text-xl text-gray-900 tracking-tight">PoseAI</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="/physical" class="text-gray-500 hover:text-brand-600 font-medium text-sm transition-colors flex items-center gap-1">
+                        <i class="ph ph-arrow-left"></i> Back to Tests
+                    </a>
+                    <div class="h-8 w-px bg-gray-200 mx-2"></div>
+                    <div class="h-9 w-9 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold border border-brand-200">U</div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+        
+        <!-- Header -->
+        <div class="text-center mb-10 animate-fade-in">
+            <span class="bg-brand-100 text-brand-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Assessment Mode</span>
+            <h1 class="text-4xl font-bold text-gray-900 mt-3 mb-2">{{ test|capitalize }} Test</h1>
+            <p class="text-gray-500 max-w-lg mx-auto">
+                Choose how you want to submit your video. Ensure your full body is visible for accurate AI analysis.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Option 1: Upload Video -->
+            <div class="bg-white rounded-2xl shadow-md p-8 border border-gray-100 flex flex-col animate-fade-in" style="animation-delay: 0.1s;">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                        <i class="ph-bold ph-upload-simple text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Upload Video</h2>
+                </div>
+
+                <form id="physicalUploadForm" class="flex-grow flex flex-col" enctype="multipart/form-data" method="POST">
+                    <div class="relative group flex-grow">
+                        <input type="file" name="video" id="videoInput" accept="video/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" required onchange="updateFileName(this)">
+                        <div class="file-drop-zone h-48 w-full rounded-xl flex flex-col items-center justify-center text-center p-6">
+                            <i class="ph ph-file-video text-4xl text-gray-300 mb-3 group-hover:text-brand-500 transition-colors"></i>
+                            <p class="text-sm font-medium text-gray-900" id="fileName">Click to upload or drag & drop</p>
+                            <p class="text-xs text-gray-500 mt-1">MP4, WebM or MOV</p>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" id="uploadBtn" class="mt-6 w-full bg-brand-600 hover:bg-brand-700 text-white py-3 rounded-lg font-semibold transition-all shadow-sm flex items-center justify-center gap-2">
+                        <span>Analyze Video</span>
+                        <i class="ph-bold ph-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Option 2: Record Live -->
+            <div class="bg-white rounded-2xl shadow-md p-8 border border-gray-100 flex flex-col animate-fade-in" style="animation-delay: 0.2s;">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                        <i class="ph-bold ph-video-camera text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Record Live</h2>
+                </div>
+
+                <!-- Viewfinder -->
+                <div class="relative bg-gray-900 rounded-xl overflow-hidden aspect-video flex items-center justify-center mb-6 group">
+                    <video id="videoPreview" class="w-full h-full object-cover hidden" autoplay muted playsinline></video>
+                    
+                    <!-- Placeholder State -->
+                    <div id="cameraPlaceholder" class="text-center">
+                        <i class="ph ph-camera-slash text-4xl text-gray-600 mb-2"></i>
+                        <p class="text-gray-500 text-sm">Camera is off</p>
+                    </div>
+
+                    <!-- Recording Indicator -->
+                    <div id="recordingIndicator" class="absolute top-4 right-4 flex items-center gap-2 hidden">
+                        <span class="relative flex h-3 w-3">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                        </span>
+                        <span class="text-white text-xs font-bold uppercase tracking-wider shadow-sm">REC</span>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="flex gap-3 mt-auto">
+                    <button id="startCameraBtn" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+                        <i class="ph-fill ph-camera"></i> Enable
+                    </button>
+                    <button id="recordBtn" disabled class="flex-1 py-2.5 bg-red-500 hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+                        <i class="ph-fill ph-record"></i> Start
+                    </button>
+                    <button id="stopRecordBtn" disabled class="flex-1 py-2.5 bg-gray-800 hover:bg-gray-900 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+                        <i class="ph-fill ph-stop"></i> Stop
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Status Area -->
+        <div id="statusContainer" class="mt-8 hidden animate-fade-in">
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-center justify-center gap-3 text-blue-800">
+                <i class="ph-duotone ph-spinner animate-spin text-2xl"></i>
+                <span id="statusText" class="font-medium">Processing video...</span>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Chat Widget -->
+    <div class="fixed bottom-6 right-6 z-40 flex flex-col items-end space-y-4">
+        <div id="aiChatBox" class="hidden bg-white w-80 h-96 rounded-2xl shadow-2xl flex flex-col border border-gray-200 overflow-hidden transform transition-all duration-300 origin-bottom-right">
+            <div class="bg-brand-600 p-4 flex items-center justify-between text-white">
+                <div class="flex items-center space-x-2">
+                    <i class="ph ph-sparkle-fill text-yellow-300"></i>
+                    <span class="font-semibold text-sm">Ask PoseAI</span>
+                </div>
+                <button onclick="toggleChat()" class="hover:bg-brand-700 rounded p-1"><i class="ph ph-x"></i></button>
+            </div>
+            <div id="chatMessages" class="flex-1 p-4 overflow-y-auto chat-scroll bg-gray-50 space-y-3 text-sm">
+                <div class="flex items-start space-x-2">
+                    <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0">
+                        <i class="ph ph-robot text-brand-600"></i>
+                    </div>
+                    <div class="bg-white p-2.5 rounded-r-lg rounded-bl-lg shadow-sm border border-gray-100 text-gray-700">
+                        Any questions about the {{ test }} test? I can help with form tips!
+                    </div>
+                </div>
+            </div>
+            <div class="p-3 bg-white border-t border-gray-100">
+                <div class="flex items-center space-x-2">
+                    <input type="text" id="userQuery" placeholder="Ask about a pose..." 
+                        class="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
+                        onkeypress="if(event.key === 'Enter') sendQuery()">
+                    <button onclick="sendQuery()" class="bg-brand-600 text-white rounded-lg p-2 hover:bg-brand-700 transition-colors">
+                        <i class="ph ph-paper-plane-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <button onclick="toggleChat()" class="group flex items-center justify-center w-14 h-14 bg-brand-600 text-white rounded-full shadow-lg hover:bg-brand-700 transition-all hover:scale-105 active:scale-95 animate-bounce-slight hover:animate-none">
+            <i class="ph ph-chat-teardrop-text text-2xl group-hover:hidden"></i>
+            <i class="ph ph-caret-down text-2xl hidden group-hover:block"></i>
+        </button>
+    </div>
+
+    <script>
+        // File Input Logic
+        function updateFileName(input) {
+            const fileName = document.getElementById('fileName');
+            if (input.files && input.files.length > 0) {
+                fileName.textContent = input.files[0].name;
+                fileName.classList.add('text-brand-600', 'font-bold');
+            } else {
+                fileName.textContent = "Click to upload or drag & drop";
+                fileName.classList.remove('text-brand-600', 'font-bold');
+            }
+        }
+
+        // Camera Logic
+        const startBtn = document.getElementById('startCameraBtn');
+        const recordBtn = document.getElementById('recordBtn');
+        const stopBtn = document.getElementById('stopRecordBtn');
+        const videoPreview = document.getElementById('videoPreview');
+        const placeholder = document.getElementById('cameraPlaceholder');
+        const recIndicator = document.getElementById('recordingIndicator');
+        const statusContainer = document.getElementById('statusContainer');
+        const statusText = document.getElementById('statusText');
+
+        let mediaStream = null, mediaRecorder = null, recordedChunks = [];
+
+        startBtn.onclick = async () => {
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+                videoPreview.srcObject = mediaStream;
+                videoPreview.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                
+                startBtn.disabled = true;
+                startBtn.innerHTML = '<i class="ph-bold ph-check"></i> Active';
+                recordBtn.disabled = false;
+            } catch (e) {
+                alert("Camera access denied or unavailable.");
+            }
+        };
+
+        recordBtn.onclick = () => {
+            recordedChunks = [];
+            mediaRecorder = new MediaRecorder(mediaStream);
+            
+            mediaRecorder.ondataavailable = e => { 
+                if (e.data.size > 0) recordedChunks.push(e.data); 
+            };
+            
+            mediaRecorder.onstop = async () => {
+                const recordedBlob = new Blob(recordedChunks, { type: 'video/webm' });
+                uploadRecordedVideo(recordedBlob);
+                
+                // Cleanup
+                if (mediaStream) mediaStream.getTracks().forEach(track => track.stop());
+                videoPreview.srcObject = null;
+                videoPreview.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+                
+                // Reset UI
+                startBtn.disabled = false;
+                startBtn.innerHTML = '<i class="ph-fill ph-camera"></i> Enable';
+                recIndicator.classList.add('hidden');
+            };
+
+            mediaRecorder.start();
+            recordBtn.disabled = true;
+            stopBtn.disabled = false;
+            recIndicator.classList.remove('hidden');
+        };
+
+        stopBtn.onclick = () => {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+                stopBtn.disabled = true;
+            }
+        };
+
+        function uploadRecordedVideo(blob) {
+            statusContainer.classList.remove('hidden');
+            statusText.textContent = "Uploading and analyzing video...";
+            
+            let formData = new FormData();
+            formData.append('video', blob, "recorded_test.webm");
+            
+            fetch(window.location.pathname, { method: 'POST', body: formData })
+                .then(resp => resp.text())
+                .then(html => {
+                    document.open();
+                    document.write(html);
+                    document.close();
+                }).catch(() => {
+                    statusText.textContent = "Upload failed. Please try again.";
+                    statusContainer.classList.add('bg-red-50', 'border-red-100', 'text-red-800');
+                });
+        }
+
+        // Standard Upload Form Intercept
+        document.getElementById('physicalUploadForm').addEventListener('submit', function() {
+            const btn = document.getElementById('uploadBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ph-duotone ph-spinner animate-spin"></i> Uploading...';
+            
+            statusContainer.classList.remove('hidden');
+            statusText.textContent = "Uploading and analyzing video...";
+        });
+
+        // AI Chat Logic (Shared)
+        const apiKey = ""; 
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+        async function callGemini(prompt) {
+            if (!apiKey) return "✨ [Demo] Enable API key for real AI. " + prompt;
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) { return "AI is warming up..."; }
+        }
+
+        function toggleChat() {
+            const chatBox = document.getElementById('aiChatBox');
+            chatBox.classList.toggle('hidden');
+            if (!chatBox.classList.contains('hidden')) document.getElementById('userQuery').focus();
+        }
+
+        async function sendQuery() {
+            const input = document.getElementById('userQuery');
+            const messages = document.getElementById('chatMessages');
+            const userText = input.value.trim();
+            if (!userText) return;
+
+            messages.innerHTML += `<div class="flex items-start justify-end space-x-2"><div class="bg-brand-600 text-white p-2.5 rounded-l-lg rounded-br-lg shadow-sm text-gray-700 max-w-[85%] text-left">${userText}</div></div>`;
+            input.value = '';
+            messages.scrollTop = messages.scrollHeight;
+
+            const aiResponse = await callGemini(`You are PoseAI. Context: Performing {{ test }} Test. User: ${userText}`);
+            messages.innerHTML += `<div class="flex items-start space-x-2"><div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0"><i class="ph ph-robot text-brand-600"></i></div><div class="bg-white p-2.5 rounded-r-lg rounded-bl-lg shadow-sm border border-gray-100 text-gray-700">${marked.parse(aiResponse)}</div></div>`;
+            messages.scrollTop = messages.scrollHeight;
+        }
+    </script>
+</body>
+</html>
