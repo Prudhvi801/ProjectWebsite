@@ -2,9 +2,6 @@ import os
 import sys
 import cv2
 import mediapipe as mp
-print("MediaPipe module:", mp)
-print("MediaPipe file:", getattr(mp, "__file__", "No file"))
-print("MediaPipe dir:", dir(mp)[:20])
 import numpy as np
 import math
 import time

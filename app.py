@@ -197,7 +197,17 @@ def physical_test(test):
                     f"STDERR:\n{result.stderr}"
                 )
 
-            output_json = lines[-1]
+            json_line = None
+
+            for line in reversed(lines):
+                if line.strip().startswith("{"):
+                    json_line = line
+                    break
+
+            if not json_line:
+                raise Exception("No JSON output found")
+
+            output_json = json_line
             try:
                 res_data = json.loads(output_json)
                 summary = res_data['result']
