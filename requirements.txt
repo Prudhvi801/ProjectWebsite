@@ -1,6 +1,6 @@
 flask
 opencv-python==4.7.0.72
-mediapipe==0.10.14
+mediapipe==0.10.35
 numpy==1.26.4
 bcrypt
 gunicorn
