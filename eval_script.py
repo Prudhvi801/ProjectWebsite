@@ -1,31 +1,22 @@
 import os
 import sys
 import cv2
-import mediapipe as mp
-import mediapipe as mp
-import sys
-
-print("MP FILE =", getattr(mp, "__file__", "NONE"), file=sys.stderr)
-print("MP VERSION =", getattr(mp, "__version__", "NONE"), file=sys.stderr)
-print("HAS SOLUTIONS =", hasattr(mp, "solutions"), file=sys.stderr)
 import numpy as np
 import math
 import time
 import json
 
+# MediaPipe imports that work on Render
+from mediapipe.python.solutions import pose as mp_pose
+from mediapipe.python.solutions import drawing_utils as mp_drawing
+
 EVAL_FOLDER = os.path.join("static", "evaluated_videos")
 os.makedirs(EVAL_FOLDER, exist_ok=True)
 
-if not hasattr(mp, "solutions"):
-    raise Exception(
-        f"MediaPipe loaded from {mp.__file__} "
-        f"version={getattr(mp,'__version__','NONE')} "
-        f"has no solutions attribute"
-    )
-
-mp_pose = mp.solutions.pose
-pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
-mp_drawing = mp.solutions.drawing_utils
+pose = mp_pose.Pose(
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5
+)
 
 def draw_text(img, text, position, color=(36,255,12), font_scale=0.7, thickness=2, shadow=True):
     x, y = position
