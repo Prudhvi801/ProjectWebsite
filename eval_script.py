@@ -1,15 +1,16 @@
-import os
+import mediapipe as mp
 import sys
-import cv2
-import numpy as np
-import math
-import time
-import json
 
-# MediaPipe imports that work on Render
-from mediapipe.python.solutions import pose as mp_pose
-from mediapipe.python.solutions import drawing_utils as mp_drawing
+print("VERSION =", getattr(mp, "__version__", "NONE"), file=sys.stderr)
+print("FILE =", getattr(mp, "__file__", "NONE"), file=sys.stderr)
+print("DIR =", dir(mp), file=sys.stderr)
 
+sys.exit(1)
+print("VERSION =", getattr(mp, "__version__", "NONE"), file=sys.stderr)
+print("FILE =", getattr(mp, "__file__", "NONE"), file=sys.stderr)
+print("DIR =", dir(mp), file=sys.stderr)
+
+sys.exit(1)
 EVAL_FOLDER = os.path.join("static", "evaluated_videos")
 os.makedirs(EVAL_FOLDER, exist_ok=True)
 
