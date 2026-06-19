@@ -1,23 +1,22 @@
-import mediapipe as mp
+import os
 import sys
+import cv2
+import mediapipe as mp
+import numpy as np
+import math
+import time
+import json
 
-print("VERSION =", getattr(mp, "__version__", "NONE"), file=sys.stderr)
-print("FILE =", getattr(mp, "__file__", "NONE"), file=sys.stderr)
-print("DIR =", dir(mp), file=sys.stderr)
-
-sys.exit(1)
-print("VERSION =", getattr(mp, "__version__", "NONE"), file=sys.stderr)
-print("FILE =", getattr(mp, "__file__", "NONE"), file=sys.stderr)
-print("DIR =", dir(mp), file=sys.stderr)
-
-sys.exit(1)
 EVAL_FOLDER = os.path.join("static", "evaluated_videos")
 os.makedirs(EVAL_FOLDER, exist_ok=True)
 
+mp_pose = mp.solutions.pose
 pose = mp_pose.Pose(
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5
 )
+
+mp_drawing = mp.solutions.drawing_utils
 
 def draw_text(img, text, position, color=(36,255,12), font_scale=0.7, thickness=2, shadow=True):
     x, y = position
