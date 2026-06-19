@@ -10,6 +10,7 @@ import bcrypt
 import subprocess
 import json
 import shutil
+import sys
 
 app = Flask(__name__, template_folder='public', static_folder='static')
 app.secret_key = 'replace-with-a-strong-secret'
@@ -177,13 +178,26 @@ def physical_test(test):
         
         try:
             result = subprocess.run(
-                ['python', 'eval_script.py', test, filepath],
+                [sys.executable, 'eval_script.py', test, filepath],
                 capture_output=True,
                 text=True,
                 timeout=900
             )
-            
-            output_json = result.stdout.strip().splitlines()[-1]
+            print("========== STDOUT ==========")
+            print(result.stdout)
+
+            print("========== STDERR ==========")
+            print(result.stderr)
+
+            lines = result.stdout.strip().splitlines()
+
+            if len(lines) == 0:
+                raise Exception(
+                    f"eval_script.py produced no output.\n\n"
+                    f"STDERR:\n{result.stderr}"
+                )
+
+            output_json = lines[-1]
             try:
                 res_data = json.loads(output_json)
                 summary = res_data['result']
